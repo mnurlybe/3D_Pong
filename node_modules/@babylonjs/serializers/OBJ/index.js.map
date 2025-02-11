@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../../dev/serializers/src/OBJ/index.ts"],"names":[],"mappings":"AAAA,cAAc,iBAAiB,CAAC","sourcesContent":["export * from \"./objSerializer\";\r\n"]}
