@@ -7,6 +7,8 @@ import { Plane } from "./inventory/plane";
 import { Light } from "./inventory/light";
 import { Paddle } from "./inventory/paddle";
 import { Ball } from "./inventory/ball";
+import { Score } from "./inventory/score";
+import { GameService } from "./gameService";
 
 enum GameState {
     NOT_STARTED,
@@ -29,6 +31,12 @@ class Pong {
     _ball: Ball;
     _gameState: GameState;
     _keys: { [key: string]: boolean } = {};
+    _score: Score;
+    _scoreLeft: number = 0;
+    _scoreRight: number = 0;
+    _gameService: GameService;
+    _saveScore: boolean;
+    _username: string;
 
     constructor() {
 
@@ -41,6 +49,10 @@ class Pong {
         this._setUpScene();
 
         this._gameState = GameState.NOT_STARTED;
+        this._gameService = new GameService();
+        this._saveScore = false;
+        this._username = "dummy";
+
         this._setupControls();
 
         this._main();
@@ -75,7 +87,7 @@ class Pong {
     
     private _setUpCamera(): void {
         this._camera = new ArcRotateCamera("camera", 0, 0, 10, Vector3.Zero(), this._scene);
-        this._camera.setPosition(new Vector3(0, 5, -10));
+        this._camera.setPosition(new Vector3(0, 7, -10));
         this._camera.attachControl(this._canvas, true);
         this._camera.lowerRadiusLimit = -5;
         this._camera.upperRadiusLimit = 20;
@@ -93,6 +105,8 @@ class Pong {
         this._rightPaddle = new Paddle(this._scene, "right", this._plane.scaling.x);
 
         this._ball = new Ball(this._scene, this._leftPaddle, this._rightPaddle);
+
+        this._score = new Score(this._scene);
     }
     
     private _setupControls(): void {
@@ -104,8 +118,10 @@ class Pong {
             if (event.key === "Enter") {
                 if (this._gameState === GameState.NOT_STARTED || this._gameState === GameState.STOPPED) {
                     this._gameState = GameState.PLAYING;
+                    this._score.resetScore();
                 } else if (this._gameState === GameState.PLAYING || this._gameState === GameState.PAUSED) {
                     this._gameState = GameState.STOPPED;
+                    this._saveScore = true;
                 }
             }
             
@@ -132,11 +148,28 @@ class Pong {
                 this._rightPaddle.update();
                 this._ball.startBall();
                 this._ball.update();
+                if (this._ball.isOutLeft()) {
+                    this._score.updateScore('right');
+                    this._ball.reset();
+                    this._ball.startBall();    
+                } else if (this._ball.isOutRight()) {
+                    this._score.updateScore('left');
+                    this._ball.reset();
+                    this._ball.startBall();   
+                }
+                if (this._score.isMaxScore()) {
+                    this._gameState = GameState.STOPPED;
+                    this._saveScore = true;
+                }
             }
             if (this._gameState === GameState.STOPPED) {
                 this._leftPaddle.reset();
                 this._rightPaddle.reset();
                 this._ball.reset();
+                if (this._saveScore) {
+                    this._gameService.saveGameResult(this._username, this._score.getLeftScore(), this._score.getRightScore());
+                    this._saveScore = false;
+                }
             }
             this._scene.render();
         });

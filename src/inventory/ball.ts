@@ -2,6 +2,7 @@ import { Scene, Mesh, MeshBuilder, Vector3, Color3, StandardMaterial } from "@ba
 import { Paddle } from "./paddle";
 
 const DIAMETER = 0.25;
+const B_SPEED = 0.05;
 const SPEED_INCREASE = 0.005;
 const PLANE_WIDTH = 5 * 1.5;
 const PLANE_HEIGHT = 2.80 * 1.5;
@@ -35,7 +36,7 @@ export class Ball {
 
         this._object.checkCollisions = true;
         // set start speed
-        this._speed = 0.01;
+        this._speed = B_SPEED;
         this._Dir = { x: 0, z: 0 };
 
         this._paddleLeft = paddleLeft;
@@ -59,8 +60,16 @@ export class Ball {
         this._object.position.z = 0;
         this._Dir.x = 0;
         this._Dir.z = 0;
-        this._speed = 0.01;
+        this._speed = B_SPEED;
     }
+
+    isOutLeft(): boolean {
+        return this._object.position.x < -PLANE_WIDTH/2;
+     }
+     
+     isOutRight(): boolean {
+        return this._object.position.x > PLANE_WIDTH/2;
+     }
 
     update() {
         if (this._state === BallState.OUT_OF_PLAY) {
@@ -71,13 +80,6 @@ export class Ball {
         
         this.handleWallCollisions();
         this.handlePaddleCollisions();
-
-        // Check if ball is out (optional)
-        if (Math.abs(this._object.position.x) > PLANE_WIDTH/2) {
-            this.reset();
-            // You might want to trigger score update here
-        }
-
     }
 
     handleWallCollisions() {

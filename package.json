@@ -12,6 +12,7 @@
   "devDependencies": {
     "@babylonjs/core": "^7.48.3",
     "@babylonjs/inspector": "^7.48.3",
+    "@types/earcut": "^3.0.0",
     "html-webpack-plugin": "^5.6.3",
     "ts-loader": "^9.5.2",
     "typescript": "^5.7.3",
